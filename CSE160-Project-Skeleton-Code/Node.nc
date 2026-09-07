@@ -76,8 +76,8 @@ implementation{
             }
          }
 
-         seenSrc[Scount] = myMsg->src;
-         seenSeq[Scount] = myMsg->seq;
+         seenSrc[Snext] = myMsg->src;
+         seenSeq[Snext] = myMsg->seq;
          Snext = (Snext + 1) % 15;
 
          if(Scount < 15){
@@ -116,7 +116,7 @@ implementation{
          forwardPackage = *myMsg;
          forwardPackage.TTL--;
 
-         call Sender.send(forwardPackage, AM_BORADCAST);
+         call Sender.send(forwardPackage, AM_BROADCAST_ADDR);
 
          return msg;
       }
