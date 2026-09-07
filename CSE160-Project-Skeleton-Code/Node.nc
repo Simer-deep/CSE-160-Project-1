@@ -52,6 +52,13 @@ implementation{
 
    event void AMControl.stopDone(error_t err){}
 
+   void rememberPacket(uint16_t src, uint16_t seq)
+   {
+      seenSrc[Scount] = src;
+      seenSeq[Scount] = seq;
+      Scount++;
+   }
+
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
       dbg(GENERAL_CHANNEL, "Packet Received\n");
       if(len==sizeof(pack)){
@@ -65,19 +72,21 @@ implementation{
          myMsg->protocol
          );
 
-         for(int i = 0; i < Scount; i++){
-            if(seenSrc[i] == myMsg->src && seenSeq[i] == myMsg->seq){
-               
+         int i;
+
+         for(i = 0; i < Scount; i++)
+         {
+            if(seenSrc[i] == myMsg->src && seenSeq[i] == myMsg->seq)
+            {
                return msg;
             }
          }
 
-         seenSrc[Scount] = myMsg->src;
-         seenSeq[Scount] = myMsg->seq;
-         Scount++;
+         rememberPacket(myMsg->src, myMsg->seq);
 
-         if(myMsg->dest == TOS_NODE_ID && myMsg->protocol == PING)
+         if(myMsg->dest == TOS_NODE_ID && myMsg->protocol == PROTOCOL_PING) // Is this for me and protocol is ping. If yes then send back as protocol reply
             {
+
                makePack(
                   &sendPackage, 
                   TOS_NODE_ID, 
@@ -88,12 +97,14 @@ implementation{
                   myMsg->payload, 
                   PACKET_MAX_PAYLOAD_SIZE
                );
+               rememberPacket(TOS_NODE_ID, sequenceNum);
 
                sequenceNum++; 
                call Sender.send(sendPackage, AM_BROADCAST_ADDR);
             }
 
-         if(myMsg->TTL == 0){
+         if(myMsg->TTL == 0)
+         {
             return msg;
          }
 
@@ -119,6 +130,8 @@ implementation{
          payload, 
          PACKET_MAX_PAYLOAD_SIZE
       );
+
+      rememberPacket(TOS_NODE_ID, sequenceNum);
 
       sequenceNum++; 
       call Sender.send(sendPackage, AM_BROADCAST_ADDR); // Send this radio frame to every node that is physically one hop away from me (AM_BORADCAST).
