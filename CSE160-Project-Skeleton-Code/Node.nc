@@ -55,9 +55,15 @@ implementation{
 
    void rememberPacket(uint16_t src, uint16_t seq)
    {
-      seenSrc[Scount] = src;
-      seenSeq[Scount] = seq;
-      Scount++;
+      seenSrc[Snext] = myMsg->src;
+      seenSeq[Snext] = myMsg->seq;
+
+      Snext = (Snext + 1) % 15;
+
+      if(Scount < 15)
+      {
+         Scount++;
+      }
    }
 
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
@@ -76,8 +82,6 @@ implementation{
          myMsg->TTL,
          myMsg->protocol
          );
-
-         int i;
 
          for(i = 0; i < Scount; i++)
          {
@@ -123,7 +127,7 @@ implementation{
          forwardPackage = *myMsg;
          forwardPackage.TTL--;
 
-         call Sender.send(forwardPackage, AM_BORADCAST);
+         call Sender.send(forwardPackage, AM_BROADCAST_ADDR);
 
          return msg;
       }
