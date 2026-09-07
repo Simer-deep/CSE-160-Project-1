@@ -31,6 +31,7 @@ implementation{
    uint16_t seenSrc[15];
    uint16_t seenSeq[15];
    uint16_t Scount = 0;
+   uint16_t Snext = 0;
 
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, uint8_t *payload, uint8_t length);
@@ -60,8 +61,12 @@ implementation{
    }
 
    event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
+
+      uint16_t i;
+      pack forwardPackage;
+
       dbg(GENERAL_CHANNEL, "Packet Received\n");
-      if(len==sizeof(pack)){
+      if(len==sizeof(pack)){ //take all information and fill it in to the flooding channel
          pack* myMsg=(pack*) payload;
          dbg(GENERAL_CHANNEL, "Node %d received src=%d dest=%d seq=%d TTL=%d protocol=%d\n",
          TOS_NODE_ID,
@@ -103,12 +108,22 @@ implementation{
                call Sender.send(sendPackage, AM_BROADCAST_ADDR);
             }
 
-         if(myMsg->TTL == 0)
-         {
+         if(myMsg->dest == TOS_NODE_ID){
+            if(myMsg->protocol == PROTOCOL_PINGREPLY){
+               dbg(GENERAL_CHANNEL, "Ping reply recieved from %d\n", myMsg->src);
+            }
+
             return msg;
          }
 
-         myMsg->TTL--;
+         if(myMsg->TTL == 0){ //if time to live goes to 0 we drop msg
+            return msg;
+         }
+
+         forwardPackage = *myMsg;
+         forwardPackage.TTL--;
+
+         call Sender.send(forwardPackage, AM_BORADCAST);
 
          return msg;
       }
