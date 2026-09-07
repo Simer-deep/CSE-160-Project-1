@@ -28,6 +28,10 @@ implementation{
    pack sendPackage;
    uint16_t sequenceNum = 1; //Sequence incr++
 
+   uint16_t seenSrc[15];
+   uint16_t seenSeq[15];
+   uint16_t Scount = 0;
+
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, uint8_t *payload, uint8_t length);
 
@@ -52,7 +56,38 @@ implementation{
       dbg(GENERAL_CHANNEL, "Packet Received\n");
       if(len==sizeof(pack)){
          pack* myMsg=(pack*) payload;
-         dbg(GENERAL_CHANNEL, "Package Payload: %s\n", myMsg->payload);
+         dbg(GENERAL_CHANNEL, "Node %d received src=%d dest=%d seq=%d TTL=%d protocol=%d\n",
+         TOS_NODE_ID,
+         myMsg->src,
+         myMsg->seq,
+         myMsg->TTL,
+         myMsg->protocol);
+
+         for(int i = 0; i < Scount; i++){
+            if(seenSrc[i] == myMsg->src && seenSeq[i] == myMsg->seq){
+               
+               return msg;
+            }
+         }
+
+         seenSrc[Scount] = myMsg->src;
+         seenSeq[Scount] = myMsg->seq;
+         Scount++;
+
+         if(src->dest == TOS_NODE_ID){
+            
+            if(myMsg->protocol == PING){
+               sendPingReply(myMsg);
+            }
+
+         }
+
+         if(myMsg->TTL == 0){
+            return msg;
+         }
+
+         myMsg->TTL--;
+
          return msg;
       }
       dbg(GENERAL_CHANNEL, "Unknown Packet Type %d\n", len);
@@ -62,7 +97,7 @@ implementation{
 
    event void CommandHandler.ping(uint16_t destination, uint8_t *payload){
       dbg(GENERAL_CHANNEL, "PING EVENT \n");
-      makePack(&sendPackage, TOS_NODE_ID, destination, 0, 0, sequenceNum, payload, PACKET_MAX_PAYLOAD_SIZE);
+      makePack(&sendPackage, TOS_NODE_ID, destination, MAX_TTL, 0, sequenceNum, payload, PACKET_MAX_PAYLOAD_SIZE);
       sequenceNum++; 
       call Sender.send(sendPackage, destination);
    }
