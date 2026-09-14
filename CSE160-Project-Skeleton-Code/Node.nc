@@ -35,6 +35,7 @@ implementation{
    void ageNeighbors(){
 
       uint16_t i;
+      i = 0;
       
       while (i < neighborCount){
 
