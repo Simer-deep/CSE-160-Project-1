@@ -36,15 +36,19 @@ implementation{
 
       uint16_t i;
       
-      for(i = 0; i < neighborCount; i++){
-            neighborDeadAge[i]++;
+      while (i < neighborCount){
 
-            if(neighborDeadAge[i] >= 3){
-               neighbors[i] = neighbors[neighborCount - 1];
-               neighborDeadAge[i] = neighborDeadAge[neighborCount - 1];
+         neighborDeadAge[i]++;
 
-               neighborCount--;
-            }
+         if(neighborDeadAge[i] >= 3){
+            neighbors[i] = neighbors[neighborCount - 1];
+            neighborDeadAge[i] = neighborDeadAge[neighborCount - 1];
+
+            neighborCount--;
+         }
+         else{
+            i++;
+         }
       }
    }
 
@@ -71,6 +75,8 @@ implementation{
    event void NeighborTimer.fired()
    {
       uint8_t discoveryMsg[PACKET_MAX_PAYLOAD_SIZE] = "DISCOVERY";
+
+      ageNeighbors();
 
       makePack(
          &sendPackage,
@@ -154,8 +160,7 @@ implementation{
          rememberPacket(myMsg->src, myMsg->seq);
 
          if(myMsg->protocol == PROTOCOL_PING && myMsg->TTL == 1 && myMsg->dest == AM_BROADCAST_ADDR){
-            //person A functions
-
+            addOrRefreshNeighbor(myMsg->src);
             return msg;
          }
 
