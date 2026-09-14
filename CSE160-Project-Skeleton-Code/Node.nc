@@ -31,6 +31,16 @@ implementation{
    uint16_t neighborDeadAge[15];
    uint8_t neighborCount = 0;
 
+   //kill off old neighbors
+   void ageNeighbors(){
+
+      uint16_t i;
+      
+      for(i = 0; i < neigborCount; i++){
+            neighborDeadAge[i]++;
+      }
+   }
+
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, const void *payload, uint8_t length);
 
@@ -205,7 +215,15 @@ implementation{
       call Sender.send(sendPackage, AM_BROADCAST_ADDR); // Send this radio frame to every node that is physically one hop away from me (AM_BORADCAST).
    }
 
-   event void CommandHandler.printNeighbors(){}
+   event void CommandHandler.printNeighbors(){
+
+      uint16_t i;
+
+      for(i = 0; i < neigborCount; i++){
+         dbg(NEIGHBOR_CHANNEL, "Printing Neighbor: %d", neighbors[i]);
+      }
+
+   }
 
    event void CommandHandler.printRouteTable(){}
 
