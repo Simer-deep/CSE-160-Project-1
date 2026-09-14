@@ -35,16 +35,21 @@ implementation{
    void ageNeighbors(){
 
       uint16_t i;
+      i = 0;
       
-      for(i = 0; i < neighborCount; i++){
-            neighborDeadAge[i]++;
+      while (i < neighborCount){
 
-            if(neighborDeadAge[i] >= 3){
-               neighbors[i] = neighbors[neighborCount - 1];
-               neighborDeadAge[i] = neighborDeadAge[neighborCount - 1];
+         neighborDeadAge[i]++;
 
-               neighborCount--;
-            }
+         if(neighborDeadAge[i] >= 3){
+            neighbors[i] = neighbors[neighborCount - 1];
+            neighborDeadAge[i] = neighborDeadAge[neighborCount - 1];
+
+            neighborCount--;
+         }
+         else{
+            i++;
+         }
       }
    }
 
