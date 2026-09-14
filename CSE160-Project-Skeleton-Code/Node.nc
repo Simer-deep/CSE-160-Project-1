@@ -1,11 +1,3 @@
-/*
- * ANDES Lab - University of California, Merced
- * This class provides the basic functions of a network node.
- *
- * @author UCM ANDES Lab
- * @date   2013/09/03
- *
- */
 #include <Timer.h>
 #include "includes/command.h"
 #include "includes/packet.h"
@@ -22,6 +14,8 @@ module Node{
    uses interface SimpleSend as Sender;
 
    uses interface CommandHandler;
+
+   uses interface Timer<TMilli> as NeighborTimer;
 }
 
 implementation{
@@ -33,9 +27,9 @@ implementation{
    uint16_t Scount = 0;
    uint16_t Snext = 0;
 
-   uint16_t neighbors[15]
-   uint16_t neighborDeadAge[15]
-   uint8_t neigborCount = 0;
+   uint16_t neighbors[15];
+   uint16_t neighborDeadAge[15];
+   uint8_t neighborCount = 0;
 
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, const void *payload, uint8_t length);
@@ -49,10 +43,34 @@ implementation{
    event void AMControl.startDone(error_t err){
       if(err == SUCCESS){
          dbg(GENERAL_CHANNEL, "Radio On\n");
+
+         call NeighborTimer.startPeriodic(5000); // We start timer after AmControl == Success. Right now every 5 sec
       }else{
          //Retry until successful
          call AMControl.start();
       }
+   }
+
+   event void NeighborTimer.fired()
+   {
+      uint8_t discoveryMsg[PACKET_MAX_PAYLOAD_SIZE] = "DISCOVERY";
+
+      makePack(
+         &sendPackage,
+         TOS_NODE_ID,
+         AM_BROADCAST_ADDR,
+         1,
+         PROTOCOL_PING,
+         sequenceNum,
+         discoveryMsg,
+         PACKET_MAX_PAYLOAD_SIZE
+      );
+
+      rememberPacket(TOS_NODE_ID, sequenceNum);
+
+      sequenceNum++;
+
+      call Sender.send(sendPackage, AM_BROADCAST_ADDR);
    }
 
    event void AMControl.stopDone(error_t err){}
@@ -67,6 +85,27 @@ implementation{
       if(Scount < 15)
       {
          Scount++;
+      }
+   }
+
+   void addOrRefreshNeighbor(uint16_t nodeID)
+   {
+      uint8_t i;
+
+      for(i = 0; i < neigborCount; i++)
+      {
+         if(neigbors[i] == nodeID)
+         {
+            neighborDeadAge[i] = 0;
+            return;
+         }
+      }
+
+      if(neigborCount < 15)
+      {
+         neigbors[neigborCount] = nodeID;
+         neighborDeadAge[neigborCount] = 0;
+         neigborCount++;
       }
    }
 
