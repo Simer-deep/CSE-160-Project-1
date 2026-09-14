@@ -33,8 +33,8 @@ implementation{
    uint16_t Scount = 0;
    uint16_t Snext = 0;
 
-   uint16_t neighbors[15]
-   uint16_t neighborDeadAge[15]
+   uint16_t neighbors[15];
+   uint16_t neighborDeadAge[15];
    uint8_t neigborCount = 0;
 
    // Prototypes
@@ -166,7 +166,14 @@ implementation{
       call Sender.send(sendPackage, AM_BROADCAST_ADDR); // Send this radio frame to every node that is physically one hop away from me (AM_BORADCAST).
    }
 
-   event void CommandHandler.printNeighbors(){}
+   event void CommandHandler.printNeighbors(){
+
+      uint16_t i;
+
+      for(int i = 0; i < neigborCount; )
+
+
+   }
 
    event void CommandHandler.printRouteTable(){}
 
