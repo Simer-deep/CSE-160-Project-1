@@ -15,6 +15,8 @@ module Node{
 
    uses interface CommandHandler;
 
+   uses interface Random;
+
    uses interface Timer<TMilli> as NeighborTimer;
 }
 
@@ -63,10 +65,13 @@ implementation{
    }
 
    event void AMControl.startDone(error_t err){
+      uint16_t jitter;
+      
       if(err == SUCCESS){
          dbg(GENERAL_CHANNEL, "Radio On\n");
 
-         call NeighborTimer.startPeriodic(5000); // We start timer after AmControl == Success. Right now every 5 sec
+         jitter = call Random.rand16() % 1000;
+         call NeighborTimer.startOneShot(3000 + jitter);
       }else{
          //Retry until successful
          call AMControl.start();
@@ -76,6 +81,7 @@ implementation{
    event void NeighborTimer.fired()
    {
       uint8_t discoveryMsg[PACKET_MAX_PAYLOAD_SIZE] = "DISCOVERY";
+      uint16_t jitter;
 
       ageNeighbors();
 
@@ -95,6 +101,9 @@ implementation{
       sequenceNum++;
 
       call Sender.send(sendPackage, AM_BROADCAST_ADDR);
+
+      jitter = call Random.rand16() % 1000;
+      call NeighborTimer.startOneShot(5000 + jitter);
    }
 
    event void AMControl.stopDone(error_t err){}
@@ -180,6 +189,18 @@ implementation{
 
             return msg;
          }
+
+         if(myMsg->protocol == PROTOCOL_PINGREPLY && myMsg->TTL == 1 && myMsg->dest == TOS_NODE_ID)
+            {
+               addOrRefreshNeighbor(myMsg->src);
+
+               dbg(NEIGHBOR_CHANNEL,
+                  "Node %d refreshed neighbor %d\n",
+                  TOS_NODE_ID,
+                  myMsg->src);
+
+               return msg;
+            }
 
          if(myMsg->dest == TOS_NODE_ID && myMsg->protocol == PROTOCOL_PING) // Is this for me and protocol is ping. If yes then send back as protocol reply
             {

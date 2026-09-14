@@ -21,6 +21,9 @@ implementation {
     components new TimerMilliC() as NeighborTimerC;
     Node.NeighborTimer -> NeighborTimerC;
 
+    components RandomC;
+    Node.Random -> RandomC;
+
     Node -> MainC.Boot;
 
     Node.Receive -> GeneralReceive;
