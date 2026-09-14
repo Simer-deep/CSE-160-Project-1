@@ -37,6 +37,16 @@ implementation{
    uint16_t neighborDeadAge[15];
    uint8_t neigborCount = 0;
 
+   //kill off old neighbors
+   void ageNeighbors(){
+
+      uint16_t i;
+      
+      for(i = 0; i < neigborCount; i++){
+            neighborDeadAge[i]++;
+      }
+   }
+
    // Prototypes
    void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, const void *payload, uint8_t length);
 
@@ -170,8 +180,9 @@ implementation{
 
       uint16_t i;
 
-      for(int i = 0; i < neigborCount; )
-
+      for(i = 0; i < neigborCount; i++){
+         dbg(NEIGHBOR_CHANNEL, "Printing Neighbor: %d", neighbors[i]);
+      }
 
    }
 
