@@ -26,7 +26,8 @@ def main():
     s.runTime(1);
 
     s.ping(1, 10, "Hi!");
-    s.runTime(1);
+    # Allow the multi-hop ping and its reply to finish travelling.
+    s.runTime(10);
 
 if __name__ == '__main__':
     main()

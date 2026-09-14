@@ -33,8 +33,12 @@ implementation{
    uint16_t Scount = 0;
    uint16_t Snext = 0;
 
+   uint16_t neighbors[15]
+   uint16_t neighborDeadAge[15]
+   uint8_t neigborCount = 0;
+
    // Prototypes
-   void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, uint8_t *payload, uint8_t length);
+   void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t Protocol, uint16_t seq, const void *payload, uint8_t length);
 
    event void Boot.booted(){
       call AMControl.start();
@@ -55,8 +59,8 @@ implementation{
 
    void rememberPacket(uint16_t src, uint16_t seq)
    {
-      seenSrc[Snext] = myMsg->src;
-      seenSeq[Snext] = myMsg->seq;
+      seenSrc[Snext] = src;
+      seenSeq[Snext] = seq;
 
       Snext = (Snext + 1) % 15;
 
@@ -125,7 +129,7 @@ implementation{
          }
 
          forwardPackage = *myMsg;
-         forwardPackage.TTL--;
+         forwardPackage.TTL = myMsg->TTL - 1;
 
          call Sender.send(forwardPackage, AM_BROADCAST_ADDR);
 
@@ -172,7 +176,7 @@ implementation{
 
    event void CommandHandler.setAppClient(){}
 
-   void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t protocol, uint16_t seq, uint8_t* payload, uint8_t length){
+   void makePack(pack *Package, uint16_t src, uint16_t dest, uint16_t TTL, uint16_t protocol, uint16_t seq, const void* payload, uint8_t length){
       Package->src = src;
       Package->dest = dest;
       Package->TTL = TTL;
