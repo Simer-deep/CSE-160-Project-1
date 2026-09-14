@@ -72,6 +72,8 @@ implementation{
    {
       uint8_t discoveryMsg[PACKET_MAX_PAYLOAD_SIZE] = "DISCOVERY";
 
+      ageNeighbors();
+
       makePack(
          &sendPackage,
          TOS_NODE_ID,
@@ -154,7 +156,22 @@ implementation{
          rememberPacket(myMsg->src, myMsg->seq);
 
          if(myMsg->protocol == PROTOCOL_PING && myMsg->TTL == 1 && myMsg->dest == AM_BROADCAST_ADDR){
-            //person A functions
+            makePack(
+               &sendPackage,
+               TOS_NODE_ID,
+               myMsg->src,
+               1,
+               PROTOCOL_PINGREPLY,
+               sequenceNum,
+               myMsg->payload,
+               PACKET_MAX_PAYLOAD_SIZE
+            );
+
+            rememberPacket(TOS_NODE_ID, sequenceNum);
+
+            sequenceNum++;
+
+            call Sender.send(sendPackage, myMsg->src);
 
             return msg;
          }
