@@ -36,14 +36,14 @@ implementation{
 
       uint16_t i;
       
-      for(i = 0; i < neigborCount; i++){
+      for(i = 0; i < neighborCount; i++){
             neighborDeadAge[i]++;
 
             if(neighborDeadAge[i] >= 3){
-               neighbors[i] = neighbors[neigborCount - 1];
-               neighborDeadAge[i] = neighborDeadAge[neigborCount - 1];
+               neighbors[i] = neighbors[neighborCount - 1];
+               neighborDeadAge[i] = neighborDeadAge[neighborCount - 1];
 
-               neigborCount--;
+               neighborCount--;
             }
       }
    }
@@ -109,20 +109,20 @@ implementation{
    {
       uint8_t i;
 
-      for(i = 0; i < neigborCount; i++)
+      for(i = 0; i < neighborCount; i++)
       {
-         if(neigbors[i] == nodeID)
+         if(neighbors[i] == nodeID)
          {
             neighborDeadAge[i] = 0;
             return;
          }
       }
 
-      if(neigborCount < 15)
+      if(neighborCount < 15)
       {
-         neigbors[neigborCount] = nodeID;
-         neighborDeadAge[neigborCount] = 0;
-         neigborCount++;
+         neighbors[neighborCount] = nodeID;
+         neighborDeadAge[neighborCount] = 0;
+         neighborCount++;
       }
    }
 
@@ -226,7 +226,7 @@ implementation{
 
       uint16_t i;
 
-      for(i = 0; i < neigborCount; i++){
+      for(i = 0; i < neighborCount; i++){
          dbg(NEIGHBOR_CHANNEL, "Printing Neighbor: %d\n", neighbors[i]);
       }
 
