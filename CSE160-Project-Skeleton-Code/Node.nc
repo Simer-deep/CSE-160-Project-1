@@ -97,6 +97,12 @@ implementation{
 
          rememberPacket(myMsg->src, myMsg->seq);
 
+         if(myMsg->protocol == PROTOCOL_PING && myMsg->TTL == 1 && myMsg->dest == AM_BROADCAST_ADDR){
+            //person A functions
+
+            return msg;
+         }
+
          if(myMsg->dest == TOS_NODE_ID && myMsg->protocol == PROTOCOL_PING) // Is this for me and protocol is ping. If yes then send back as protocol reply
             {
 
