@@ -38,6 +38,13 @@ implementation{
       
       for(i = 0; i < neigborCount; i++){
             neighborDeadAge[i]++;
+
+            if(neighborDeadAge[i] >= 3){
+               neighbors[i] = neighbors[neigborCount - 1];
+               neighborDeadAge[i] = neighborDeadAge[neigborCount - 1];
+
+               neigborCount--;
+            }
       }
    }
 
@@ -220,7 +227,7 @@ implementation{
       uint16_t i;
 
       for(i = 0; i < neigborCount; i++){
-         dbg(NEIGHBOR_CHANNEL, "Printing Neighbor: %d", neighbors[i]);
+         dbg(NEIGHBOR_CHANNEL, "Printing Neighbor: %d\n", neighbors[i]);
       }
 
    }
