@@ -55,8 +55,8 @@ implementation{
 
    void rememberPacket(uint16_t src, uint16_t seq)
    {
-      seenSrc[Snext] = myMsg->src;
-      seenSeq[Snext] = myMsg->seq;
+      seenSrc[Snext] = src;
+      seenSeq[Snext] = seq;
 
       Snext = (Snext + 1) % 15;
 
